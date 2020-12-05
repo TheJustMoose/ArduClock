@@ -4,24 +4,23 @@
 
 RTClib rtc;
 
-// pin number == bit number
-// yellow - data - D4 == PD4
+// TPIC6C595 ctrl
 const int REG_DATA = 4;
-// gray  - clock - D6 == PD6
 const int REG_CLK = 5;
-// white - latch - D7 == PD7
 const int REG_LATCH = 6;
 
 #define REG_DIR DDRD
 #define REG_PORT PORTD
 #define ENC_PORT PINC
 
-const int LED1_PIN = 8;
-const int LED2_PIN = 2;
+const int LED1_PIN = 7;
+const int LED2_PIN = 8;
+const int PWM_PIN = 9;
 
-const int H_BTN_PIN = 12;
+const int H_BTN_PIN = A3;
 const int M_BTN_PIN = 11;
-const int Z_BTN_PIN = 9;
+const int Z_BTN_PIN = 2;
+const int R_BTN_PIN = 12;
 
 const uint8_t sA = 0x40;
 const uint8_t sB = 0x80;
@@ -81,8 +80,11 @@ void setup() {
   bitClear(REG_PORT, REG_LATCH);
   pinMode(LED1_PIN, OUTPUT);
   pinMode(LED2_PIN, OUTPUT);
+  pinMode(PWM_PIN, OUTPUT);
   digitalWrite(LED1_PIN, LOW);
   digitalWrite(LED2_PIN, LOW);
+  //digitalWrite(PWM_PIN, LOW);
+  analogWrite(PWM_PIN, 128);
 
   Serial.begin(115200);
   Serial.println("Start");
@@ -98,6 +100,8 @@ bool m_in_edit = false;
 unsigned long btn_time = 0;
 unsigned long led_time = 0;
 bool updated = false;
+
+int brightness = 127;
 
 /* returns change in encoder state (-1,0,1) */
 int8_t read_encoder() {
@@ -154,9 +158,7 @@ void loop() {
 
       Serial.print("H: ");
       Serial.println(h, DEC);
-    }
-
-    if (m_in_edit) {
+    } else if (m_in_edit) {
       DateTime now = rtc.now();
       int m = now.minute();
       m += tmpdata;
@@ -173,6 +175,14 @@ void loop() {
 
       Serial.print("M: ");
       Serial.println(m, DEC);
+    } else {
+      brightness += tmpdata*4;
+      if (brightness < 0)
+        brightness = 0;
+      if (brightness > 255)
+        brightness = 255;
+      analogWrite(PWM_PIN, brightness);
+      Serial.println("bright");
     }
   }
 
