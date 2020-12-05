@@ -2,8 +2,6 @@
 #include <Wire.h>
 #include "DS3231.h"
 
-RTClib rtc;
-
 // TPIC6C595 ctrl
 const int REG_DATA = 4;
 const int REG_CLK = 5;
@@ -115,7 +113,7 @@ int8_t read_encoder() {
 }
 
 void out_time() {
-  DateTime now = rtc.now();
+  DateTime now = RTClib::now();
   int h = now.hour();
   int m = now.minute();
 
@@ -142,7 +140,7 @@ void loop() {
   int8_t tmpdata = read_encoder();
   if (tmpdata) {
     if (h_in_edit) {
-      DateTime now = rtc.now();
+      DateTime now = RTClib::now();
       int h = now.hour();
       h += tmpdata;
       if (h >= 24)
@@ -159,7 +157,7 @@ void loop() {
       Serial.print("H: ");
       Serial.println(h, DEC);
     } else if (m_in_edit) {
-      DateTime now = rtc.now();
+      DateTime now = RTClib::now();
       int m = now.minute();
       m += tmpdata;
       if (m >= 60)
